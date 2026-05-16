@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   Briefcase,
@@ -9,6 +10,8 @@ import {
   IndianRupee,
   Loader2,
   MapPin,
+  Pencil,
+  Trash2,
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -29,10 +32,12 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { CenteredSpinner, ErrorState } from "@/components/shared/States";
+import { ReviewDialog } from "@/components/reviews/ReviewDialog";
 import {
   useApplyJob,
   useCompleteJob,
   useDecideApplication,
+  useDeleteJob,
   useJob,
   useJobApplications,
 } from "@/lib/hooks/use-jobs";
@@ -41,6 +46,7 @@ import { formatCurrency, formatDate, formatRelativeTime } from "@/lib/utils";
 
 export default function JobDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const jobId = parseInt(params.id, 10);
   const { user } = useAuth();
 
@@ -48,6 +54,7 @@ export default function JobDetailPage() {
   const applyMut = useApplyJob();
   const completeMut = useCompleteJob();
   const decideMut = useDecideApplication();
+  const deleteMut = useDeleteJob();
 
   const isOwner = job?.posted_by_id === user?.id;
   const applications = useJobApplications(jobId);
@@ -55,12 +62,16 @@ export default function JobDetailPage() {
   const [coverMsg, setCoverMsg] = useState("");
   const [proposedRate, setProposedRate] = useState("");
   const [applyOpen, setApplyOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   if (isLoading) return <CenteredSpinner />;
   if (isError || !job) return <ErrorState message="Job not found" />;
 
   const canApply = user?.role === "worker" && !isOwner && job.status === "open";
   const canComplete = isOwner && job.status === "in_progress";
+  const canEditDelete = isOwner && (job.status === "open" || job.status === "cancelled");
+  const isCompleted = job.status === "completed";
+  const acceptedApps = applications.data?.filter((a) => a.status === "accepted") || [];
 
   const handleApply = () => {
     applyMut.mutate(
@@ -83,7 +94,56 @@ export default function JobDetailPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={job.title} description={`Posted ${formatRelativeTime(job.created_at)}`} />
+      <PageHeader
+        title={job.title}
+        description={`Posted ${formatRelativeTime(job.created_at)}`}
+        action={
+          canEditDelete ? (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/jobs/${job.id}/edit`}>
+                  <Pencil className="h-3.5 w-3.5" /> Edit
+                </Link>
+              </Button>
+              <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-destructive">
+                    <Trash2 className="h-3.5 w-3.5" /> Delete
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Delete job?</DialogTitle>
+                    <DialogDescription>
+                      This action cannot be undone. All applications will also be removed.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() =>
+                        deleteMut.mutate(job.id, {
+                          onSuccess: () => router.push("/jobs/my"),
+                        })
+                      }
+                      disabled={deleteMut.isPending}
+                    >
+                      {deleteMut.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        "Delete"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          ) : null
+        }
+      />
 
       <Card>
         <CardContent className="space-y-6 p-6">
@@ -156,7 +216,7 @@ export default function JobDetailPage() {
               Posted by{" "}
               <span className="font-medium text-foreground">{job.poster?.full_name || "—"}</span>
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {canApply && (
                 <Dialog open={applyOpen} onOpenChange={setApplyOpen}>
                   <DialogTrigger asChild>
@@ -213,6 +273,27 @@ export default function JobDetailPage() {
                 <Button onClick={() => completeMut.mutate(job.id)} disabled={completeMut.isPending}>
                   <CheckCircle2 className="h-4 w-4" /> Mark completed
                 </Button>
+              )}
+              {isCompleted && isOwner && acceptedApps.length > 0 && (
+                <ReviewDialog
+                  jobId={job.id}
+                  revieweeId={acceptedApps[0].worker_id}
+                  revieweeName={`Worker #${acceptedApps[0].worker_id}`}
+                  reviewType="customer_to_worker"
+                />
+              )}
+              {isCompleted && user?.role === "worker" && job.poster && (
+                <ReviewDialog
+                  jobId={job.id}
+                  revieweeId={job.posted_by_id}
+                  revieweeName={job.poster.full_name}
+                  reviewType="worker_to_customer"
+                  trigger={
+                    <Button>
+                      <CheckCircle2 className="h-4 w-4" /> Review customer
+                    </Button>
+                  }
+                />
               )}
             </div>
           </div>
