@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+.env*.local
+.env
+*.log
+.DS_Store
+.vscode
+.idea
+next-env.d.ts
+.turbo
+dist

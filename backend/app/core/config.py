@@ -1,0 +1,48 @@
+from typing import List
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=True,
+    )
+
+    # App
+    APP_NAME: str = "Rojgar Find API"
+    APP_ENV: str = "development"
+    APP_DEBUG: bool = True
+    APP_VERSION: str = "1.0.0"
+
+    # Server
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+
+    # Database
+    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/rojgar_find"
+
+    # JWT
+    JWT_SECRET_KEY: str = "change-me-in-production-this-is-only-a-default-value-12345"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # CORS
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:3001"]
+
+    # OpenAI
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+
+    # Uploads
+    UPLOAD_DIR: str = "uploads"
+    MAX_UPLOAD_SIZE_MB: int = 5
+
+    @property
+    def API_V1_PREFIX(self) -> str:
+        return "/api/v1"
+
+
+settings = Settings()
