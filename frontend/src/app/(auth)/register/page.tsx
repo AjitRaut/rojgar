@@ -1,174 +1,181 @@
 "use client";
 
 import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Briefcase, Building2, Loader2, User, Wrench } from "lucide-react";
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Building2, Loader2, UserCircle, UserPlus, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRegister } from "@/lib/hooks/use-auth";
+import { PasswordInput } from "@/components/ui/password-input";
 import { cn } from "@/lib/utils";
+import { useAuth, useRegister } from "@/lib/hooks/use-auth";
 import { registerSchema, type RegisterInput } from "@/lib/validators/auth";
 
-const ROLE_OPTIONS = [
-  { value: "customer", label: "Customer", description: "Hire local workers", icon: User },
-  { value: "worker", label: "Worker", description: "Find daily jobs", icon: Wrench },
-  { value: "company", label: "Company", description: "Bulk hiring", icon: Building2 },
-] as const;
+type SignupRole = "customer" | "worker" | "company";
 
-export default function RegisterPage() {
-  const register_ = useRegister();
+const ROLES: {
+  value: SignupRole;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { value: "customer", label: "Customer", icon: UserCircle },
+  { value: "worker", label: "Worker", icon: Wrench },
+  { value: "company", label: "Company", icon: Building2 },
+];
+
+function RegisterPageInner() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const roleParam = params.get("role") as SignupRole | null;
+  const initialRole: SignupRole =
+    roleParam && ["customer", "worker", "company"].includes(roleParam)
+      ? roleParam
+      : "customer";
+
+  const { accessToken, hydrated } = useAuth();
+  const reg = useRegister();
+
+  useEffect(() => {
+    if (hydrated && accessToken) router.replace("/dashboard");
+  }, [hydrated, accessToken, router]);
+
   const {
-    register,
+    register: formReg,
     handleSubmit,
-    watch,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
-    defaultValues: {
-      full_name: "",
-      email: "",
-      phone: "",
-      password: "",
-      role: "customer",
-    },
+    defaultValues: { role: initialRole },
   });
 
-  const role = watch("role");
-
-  const onSubmit = (data: RegisterInput) => {
-    register_.mutate({
-      ...data,
-      phone: data.phone?.trim() || undefined,
-    });
-  };
+  const selectedRole = watch("role");
 
   return (
-    <Card className="w-full max-w-xl border-2 shadow-xl">
-      <CardHeader>
-        <CardTitle className="text-2xl">Create your account</CardTitle>
-        <CardDescription>Join Rojgar Find and start hiring or finding work</CardDescription>
+    <Card className="w-full max-w-lg border-border/60 shadow-xl">
+      <CardHeader className="space-y-1 text-center">
+        <CardTitle className="text-2xl font-bold tracking-tight">Create your account</CardTitle>
+        <CardDescription>Get started with Rojgar Find in seconds</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div>
-            <Label className="mb-2 block">I am a...</Label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              {ROLE_OPTIONS.map((opt) => {
-                const Icon = opt.icon;
-                const active = role === opt.value;
+        <form
+          onSubmit={handleSubmit((d) => reg.mutate({ ...d, phone: d.phone || undefined }))}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label>I am a</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {ROLES.map((r) => {
+                const Icon = r.icon;
+                const active = selectedRole === r.value;
                 return (
                   <button
+                    key={r.value}
                     type="button"
-                    key={opt.value}
-                    onClick={() => setValue("role", opt.value)}
+                    onClick={() => setValue("role", r.value)}
                     className={cn(
-                      "flex flex-col items-start gap-1 rounded-xl border-2 p-3 text-left transition-all",
+                      "flex flex-col items-center gap-1 rounded-lg border-2 p-3 text-sm font-medium transition-all",
                       active
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50"
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border hover:border-primary/40 hover:bg-muted"
                     )}
                   >
-                    <Icon
-                      className={cn("h-5 w-5", active ? "text-primary" : "text-muted-foreground")}
-                    />
-                    <span className="text-sm font-medium">{opt.label}</span>
-                    <span className="text-xs text-muted-foreground">{opt.description}</span>
+                    <Icon className="h-5 w-5" />
+                    {r.label}
                   </button>
                 );
               })}
             </div>
-            {errors.role && (
-              <p className="mt-1 text-xs text-destructive">{errors.role.message}</p>
+            {errors.role && <p className="text-xs text-destructive">{errors.role.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="full_name">
+              {selectedRole === "company" ? "Company name" : "Full name"}
+            </Label>
+            <Input
+              id="full_name"
+              autoComplete="name"
+              placeholder={selectedRole === "company" ? "ABC Construction Pvt Ltd" : "Your name"}
+              {...formReg("full_name")}
+            />
+            {errors.full_name && (
+              <p className="text-xs text-destructive">{errors.full_name.message}</p>
             )}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="full_name">Full name</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="full_name"
-                placeholder="Your full name"
-                autoComplete="name"
-                {...register("full_name")}
-                aria-invalid={!!errors.full_name}
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                {...formReg("email")}
               />
-              {errors.full_name && (
-                <p className="text-xs text-destructive">{errors.full_name.message}</p>
-              )}
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone (optional)</Label>
+              <Label htmlFor="phone">
+                Phone <span className="text-muted-foreground">(optional)</span>
+              </Label>
               <Input
                 id="phone"
-                placeholder="10-digit number"
+                type="tel"
                 autoComplete="tel"
-                {...register("phone")}
-                aria-invalid={!!errors.phone}
+                placeholder="9876543210"
+                {...formReg("phone")}
               />
-              {errors.phone && (
-                <p className="text-xs text-destructive">{errors.phone.message}</p>
-              )}
+              {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              {...register("email")}
-              aria-invalid={!!errors.email}
-            />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
-            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               autoComplete="new-password"
-              placeholder="Min 6 characters"
-              {...register("password")}
-              aria-invalid={!!errors.password}
+              placeholder="At least 6 characters"
+              {...formReg("password")}
             />
             {errors.password && (
               <p className="text-xs text-destructive">{errors.password.message}</p>
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={register_.isPending}>
-            {register_.isPending ? (
+          <Button type="submit" className="w-full" disabled={reg.isPending}>
+            {reg.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" /> Creating account...
               </>
             ) : (
-              "Create account"
+              <>
+                <UserPlus className="h-4 w-4" /> Create account
+              </>
             )}
           </Button>
-
-          <p className="text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="font-medium text-primary hover:underline">
-              Sign in
-            </Link>
-          </p>
         </form>
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link href="/login" className="font-medium text-primary hover:underline">
+            Sign in
+          </Link>
+        </p>
       </CardContent>
     </Card>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterPageInner />
+    </Suspense>
   );
 }

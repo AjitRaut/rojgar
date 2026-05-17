@@ -6,11 +6,11 @@ import { reviewsApi, type ReviewCreate } from "@/lib/api/reviews";
 import { extractErrorMessage } from "@/lib/api/client";
 import { QUERY_KEYS } from "@/lib/constants";
 
-export function useReviewsForUser(userId: number) {
+export function useReviewsForUser(userId: number, enabled = true) {
   return useQuery({
     queryKey: QUERY_KEYS.reviewsForUser(userId),
     queryFn: () => reviewsApi.listForUser(userId),
-    enabled: !!userId,
+    enabled: !!userId && enabled,
   });
 }
 
@@ -21,7 +21,7 @@ export function useCreateReview() {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: QUERY_KEYS.reviewsForUser(data.reviewee_id) });
       qc.invalidateQueries({ queryKey: ["worker"] });
-      qc.invalidateQueries({ queryKey: ["workers"] });
+      qc.invalidateQueries({ queryKey: ["job", data.job_id] });
       toast.success("Review submitted");
     },
     onError: (e) => toast.error(extractErrorMessage(e)),
