@@ -51,3 +51,17 @@ class UserResponse(BaseModel):
 class AuthResponse(BaseModel):
     user: UserResponse
     tokens: TokenResponse
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ForgotPasswordResponse(BaseModel):
+    message: str
+    dev_reset_link: Optional[str] = None
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=6, max_length=128)

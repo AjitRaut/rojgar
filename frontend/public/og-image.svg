@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="og" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="100" cy="100" r="200" fill="#6366f1" opacity="0.15"/>
+  <circle cx="1100" cy="530" r="220" fill="#f97316" opacity="0.15"/>
+  <rect x="80" y="80" width="120" height="120" rx="28" fill="url(#og)"/>
+  <path d="M110 142h60v9h-60zm0-18h60a9 9 0 019 9v3H101v-3a9 9 0 019-9zm-9 39h78v33a9 9 0 01-9 9h-60a9 9 0 01-9-9v-33zm30 9v15h18v-15h-18z" fill="white"/>
+  <text x="80" y="320" font-family="Inter, system-ui, sans-serif" font-size="72" font-weight="800" fill="white">Rojgar <tspan fill="url(#og)">Find</tspan></text>
+  <text x="80" y="380" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="500" fill="#94a3b8">Find daily jobs &amp; hire local workers</text>
+  <text x="80" y="430" font-family="Inter, system-ui, sans-serif" font-size="32" font-weight="500" fill="#94a3b8">AI-powered · No middlemen · Verified</text>
+  <rect x="80" y="500" width="280" height="64" rx="14" fill="url(#og)"/>
+  <text x="220" y="540" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" fill="white" text-anchor="middle">Get started free</text>
+</svg>
