@@ -9,7 +9,7 @@ export function Logo({ className, href = "/" }: { className?: string; href?: str
         <Briefcase className="h-5 w-5" />
       </span>
       <span className="text-lg tracking-tight">
-        Rojgar <span className="gradient-text">Find</span>
+        Rojgar
       </span>
     </Link>
   );
