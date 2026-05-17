@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     PORT: int = 8000
 
     # Frontend (used in password-reset email links)
-    FRONTEND_URL: str = "http://localhost:3000"
+    FRONTEND_URL: str = "https://rojgar-ashy.vercel.app/"
 
     # Database
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/rojgar_find"
