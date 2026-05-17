@@ -1,4 +1,4 @@
-# Rojgar Find - Frontend
+# Rojgar - Frontend
 
 AI-powered daily-job platform. Next.js 14 + TypeScript + Tailwind + ShadCN + Redux Toolkit + React Query.
 

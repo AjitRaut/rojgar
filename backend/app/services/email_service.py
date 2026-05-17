@@ -49,20 +49,20 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: Optional[
 
 
 def send_password_reset_email(to_email: str, full_name: str, reset_link: str) -> bool:
-    subject = "Reset your Rojgar Find password"
+    subject = "Reset your Rojgar password"
     text_body = (
         f"Hi {full_name},\n\n"
         "We received a request to reset your password. Click the link below to set a new one. "
         "This link will expire in 1 hour.\n\n"
         f"{reset_link}\n\n"
         "If you didn't request this, you can safely ignore this email.\n\n"
-        "— The Rojgar Find Team"
+        "— The Rojgar Team"
     )
     html_body = f"""<!DOCTYPE html>
 <html>
 <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px; color: #1e293b;">
   <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6, #f97316); padding: 32px; border-radius: 16px 16px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 24px;">Rojgar Find</h1>
+    <h1 style="color: white; margin: 0; font-size: 24px;">Rojgar</h1>
   </div>
   <div style="background: #f8fafc; padding: 32px; border-radius: 0 0 16px 16px;">
     <h2 style="margin-top: 0;">Reset your password</h2>

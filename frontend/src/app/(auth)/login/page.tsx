@@ -33,7 +33,7 @@ export default function LoginPage() {
     <Card className="w-full max-w-md border-border/60 shadow-xl">
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-2xl font-bold tracking-tight">Welcome back</CardTitle>
-        <CardDescription>Sign in to your Rojgar Find account</CardDescription>
+        <CardDescription>Sign in to your Rojgar account</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit((d) => login.mutate(d))} className="space-y-4">
@@ -81,7 +81,7 @@ export default function LoginPage() {
           </Button>
         </form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          New to Rojgar Find?{" "}
+          New to Rojgar?{" "}
           <Link href="/register" className="font-medium text-primary hover:underline">
             Create an account
           </Link>

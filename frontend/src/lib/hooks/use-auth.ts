@@ -61,7 +61,7 @@ export function useRegister() {
         })
       );
       qc.setQueryData(QUERY_KEYS.me, data.user);
-      toast.success("Account created. Welcome to Rojgar Find.");
+      toast.success("Account created. Welcome to Rojgar.");
       router.push("/dashboard");
     },
     onError: (e) => toast.error(extractErrorMessage(e)),

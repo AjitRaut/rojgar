@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     )
 
     # App
-    APP_NAME: str = "Rojgar Find API"
+    APP_NAME: str = "Rojgar API"
     APP_ENV: str = "development"
     APP_DEBUG: bool = True
     APP_VERSION: str = "1.0.0"
@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_FROM_EMAIL: str = ""
-    SMTP_FROM_NAME: str = "Rojgar Find"
+    SMTP_FROM_NAME: str = "Rojgar"
     SMTP_USE_TLS: bool = True
 
     @property

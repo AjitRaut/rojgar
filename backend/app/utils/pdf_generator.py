@@ -47,7 +47,7 @@ def generate_invoice_pdf(invoice: Dict[str, Any]) -> bytes:
     )
 
     story = []
-    story.append(Paragraph("ROJGAR FIND", title_style))
+    story.append(Paragraph("ROJGAR", title_style))
     story.append(Paragraph("Daily Jobs Platform - Tax Invoice", label_style))
     story.append(Spacer(1, 0.6 * cm))
 
@@ -98,7 +98,7 @@ def generate_invoice_pdf(invoice: Dict[str, Any]) -> bytes:
     story.append(Paragraph(f"<b>Total: Rs. {total:,.2f}</b>", value_style))
     story.append(Spacer(1, 1 * cm))
     story.append(Paragraph(
-        "This is a system-generated invoice from Rojgar Find Platform.",
+        "This is a system-generated invoice from Rojgar Platform.",
         label_style,
     ))
 

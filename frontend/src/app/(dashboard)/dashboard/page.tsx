@@ -40,7 +40,7 @@ export default function DashboardPage() {
           Welcome, {user.full_name.split(" ")[0]}
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Here's what's happening on Rojgar Find today.
+          Here's what's happening on Rojgar today.
         </p>
       </div>
 

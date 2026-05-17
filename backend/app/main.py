@@ -21,7 +21,7 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description=(
-        "Rojgar Find - Daily Jobs API. "
+        "Rojgar - Daily Jobs API. "
         "AI-powered workforce hiring and management platform connecting "
         "customers, companies, and local skilled workers."
     ),

@@ -1,4 +1,4 @@
-export const APP_NAME = "Rojgar Find";
+export const APP_NAME = "Rojgar";
 export const APP_TAGLINE = "Find Daily Jobs · Hire Local Workers";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";

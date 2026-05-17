@@ -4,8 +4,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Rojgar Find - Find Daily Jobs & Hire Local Workers",
-    template: "%s | Rojgar Find",
+    default: "Rojgar - Find Daily Jobs & Hire Local Workers",
+    template: "%s | Rojgar",
   },
   description:
     "AI-powered platform connecting customers and companies with skilled local workers - plumbers, electricians, carpenters, painters, and daily wage workers. No middlemen, transparent pricing.",
@@ -22,19 +22,19 @@ export const metadata: Metadata = {
     "India",
     "Phaltan",
   ],
-  authors: [{ name: "Rojgar Find Team" }],
-  creator: "Rojgar Find",
+  authors: [{ name: "Rojgar Team" }],
+  creator: "Rojgar",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   openGraph: {
     type: "website",
     locale: "en_IN",
-    title: "Rojgar Find - Daily Jobs & Local Workers",
+    title: "Rojgar - Daily Jobs & Local Workers",
     description: "Find skilled local workers or daily jobs near you - AI-powered, no middlemen.",
-    siteName: "Rojgar Find",
+    siteName: "Rojgar",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rojgar Find",
+    title: "Rojgar",
     description: "Find skilled local workers or daily jobs near you.",
   },
   robots: {

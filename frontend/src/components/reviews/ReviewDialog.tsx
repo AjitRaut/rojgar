@@ -66,7 +66,7 @@ export function ReviewDialog({ jobId, revieweeId, revieweeName, reviewType, trig
         <DialogHeader>
           <DialogTitle>Review {revieweeName}</DialogTitle>
           <DialogDescription>
-            Share your experience working on this job. Reviews help build trust on Rojgar Find.
+            Share your experience working on this job. Reviews help build trust on Rojgar.
           </DialogDescription>
         </DialogHeader>
 

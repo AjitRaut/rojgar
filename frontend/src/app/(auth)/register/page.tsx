@@ -60,7 +60,7 @@ function RegisterPageInner() {
     <Card className="w-full max-w-lg border-border/60 shadow-xl">
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-2xl font-bold tracking-tight">Create your account</CardTitle>
-        <CardDescription>Get started with Rojgar Find in seconds</CardDescription>
+        <CardDescription>Get started with Rojgar in seconds</CardDescription>
       </CardHeader>
       <CardContent>
         <form

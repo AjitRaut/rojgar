@@ -17,7 +17,7 @@ export default function MyJobsPage() {
     <div className="space-y-6">
       <PageHeader
         title="My Posted Jobs"
-        description="Jobs you've posted on Rojgar Find"
+        description="Jobs you've posted on Rojgar"
         action={
           <Button asChild>
             <Link href="/jobs/new">

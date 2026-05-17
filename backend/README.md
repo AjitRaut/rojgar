@@ -1,4 +1,4 @@
-# Rojgar Find — Backend (FastAPI)
+# Rojgar — Backend (FastAPI)
 
 AI-powered workforce hiring platform connecting customers, companies, and local skilled workers.
 

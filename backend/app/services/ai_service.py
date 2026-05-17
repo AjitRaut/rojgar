@@ -23,7 +23,7 @@ from app.utils.logger import logger
 
 
 SYSTEM_PROMPT_CHAT = (
-    "You are Rojgar Sahayak, the helpful AI assistant for Rojgar Find, "
+    "You are Rojgar Sahayak, the helpful AI assistant for Rojgar, "
     "an Indian platform that connects customers and companies with local skilled "
     "workers like plumbers, electricians, carpenters, painters, and daily wage laborers. "
     "Answer concisely in the user's language (English, Hindi, or Marathi). "

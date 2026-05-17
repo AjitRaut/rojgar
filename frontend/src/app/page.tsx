@@ -79,7 +79,7 @@ export default function HomePage() {
                   Find <span className="gradient-text">daily jobs</span> faster.
                 </h1>
                 <p className="max-w-xl text-lg text-muted-foreground">
-                  Rojgar Find connects households, companies, and skilled workers — plumbers,
+                  Rojgar connects households, companies, and skilled workers — plumbers,
                   electricians, carpenters, painters, and more — with AI-powered matching,
                   verified profiles, and fair wages.
                 </p>
@@ -166,7 +166,7 @@ export default function HomePage() {
               Ready to <span className="gradient-text">get started</span>?
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Join Rojgar Find and find your next worker or your next job today.
+              Join Rojgar and find your next worker or your next job today.
             </p>
             <div className="mt-6 flex justify-center gap-3">
               <Button asChild size="lg">
@@ -180,7 +180,7 @@ export default function HomePage() {
       <footer className="border-t py-8">
         <div className="container flex flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
           <Logo />
-          <p>© {new Date().getFullYear()} Rojgar Find. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Rojgar. All rights reserved.</p>
         </div>
       </footer>
     </div>
