@@ -6,6 +6,7 @@ from app.api.v1.endpoints import (
     companies,
     complaints,
     jobs,
+    reports,
     reviews,
     uploads,
     users,
@@ -24,3 +25,4 @@ api_router.include_router(complaints.router)
 api_router.include_router(admin.router)
 api_router.include_router(ai.router)
 api_router.include_router(uploads.router)
+api_router.include_router(reports.router)
