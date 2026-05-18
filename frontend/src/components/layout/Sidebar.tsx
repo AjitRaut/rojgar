@@ -17,6 +17,7 @@ import {
   Sparkles,
   User,
   Users,
+  BarChart2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/stores/hooks";
@@ -43,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Admin Overview", icon: ShieldCheck, roles: ["admin"] },
   { href: "/admin/users", label: "Manage Users", icon: Users, roles: ["admin"] },
   { href: "/admin/complaints", label: "All Complaints", icon: Bot, roles: ["admin"] },
+  { href: "/admin/reports", label: "Reports", icon: BarChart2, roles: ["admin"] },
   { href: "/profile", label: "Account", icon: Settings },
 ];
 
