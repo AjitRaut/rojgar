@@ -38,7 +38,7 @@ def _base_doc(buffer: BytesIO, title: str, landscape_mode: bool = False):
         leftMargin=2 * cm,
         rightMargin=2 * cm,
         title=title,
-        author="Rojgar Find Admin",
+        author="Rojgar Admin",
     )
 
 
@@ -46,7 +46,7 @@ def _header_elements(title: str, subtitle: str, styles) -> list:
     elements = []
     elements.append(
         Paragraph(
-            f'<font color="#1e40af"><b>Rojgar Find</b></font> &nbsp;|&nbsp; Admin Report',
+            f'<font color="#1e40af"><b>Rojgar </b></font> &nbsp;|&nbsp; Admin Report',
             ParagraphStyle(
                 "brand",
                 parent=styles["Normal"],
@@ -117,7 +117,7 @@ def _footer_text(styles) -> list:
         HRFlowable(width="100%", thickness=0.5, color=BORDER),
         Spacer(1, 0.2 * cm),
         Paragraph(
-            f'Generated on {datetime.now().strftime("%d %b %Y, %H:%M")} &nbsp;|&nbsp; Rojgar Find Admin Panel',
+            f'Generated on {datetime.now().strftime("%d %b %Y, %H:%M")} &nbsp;|&nbsp; Rojgar Admin Panel',
             ParagraphStyle(
                 "footer",
                 parent=styles["Normal"],
