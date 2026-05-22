@@ -2,9 +2,9 @@
 
 import {
   Briefcase,
+  Building2,
   ClipboardList,
   Download,
-  LayoutGrid,
   Loader2,
   MapPin,
   ShieldAlert,
@@ -17,7 +17,7 @@ import { type ReportMeta, type ReportDownloadParams } from "@/lib/api/reports";
 const ICON_MAP: Record<string, React.ElementType> = {
   Users,
   Briefcase,
-  LayoutGrid,
+  Building2,
   Wrench,
   MapPin,
   ClipboardList,
@@ -31,7 +31,6 @@ interface ReportCardProps {
   isDownloading: boolean;
   startDate: string;
   endDate: string;
-  limit: number;
 }
 
 export function ReportCard({
@@ -40,7 +39,6 @@ export function ReportCard({
   isDownloading,
   startDate,
   endDate,
-  limit,
 }: ReportCardProps) {
   const Icon = ICON_MAP[report.icon] ?? Download;
 
@@ -50,11 +48,10 @@ export function ReportCard({
       if (startDate) params.start_date = startDate;
       if (endDate) params.end_date = endDate;
     }
-    if (report.extra_param?.name === "limit") {
-      params.limit = limit;
-    }
     onDownload(report.id, params);
   };
+
+  const hasActiveFilter = report.has_date_filter && (startDate || endDate);
 
   return (
     <div className="group flex flex-col justify-between rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md">
@@ -63,24 +60,33 @@ export function ReportCard({
           <Icon className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="text-sm font-semibold leading-tight text-foreground">{report.title}</h3>
-          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{report.description}</p>
+          <h3 className="text-sm font-semibold leading-tight text-foreground">
+            {report.title}
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+            {report.description}
+          </p>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        {report.has_date_filter && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <span className="rounded-full bg-muted px-2 py-0.5">Supports date filter</span>
-          </div>
-        )}
-        {report.extra_param && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <span className="rounded-full bg-muted px-2 py-0.5">
-              Limit: top {limit} results
+        <div className="flex flex-wrap gap-1">
+          {report.has_date_filter ? (
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs ${
+                hasActiveFilter
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {hasActiveFilter ? "Filter applied" : "Supports date filter"}
             </span>
-          </div>
-        )}
+          ) : (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              All time
+            </span>
+          )}
+        </div>
 
         <button
           onClick={handleClick}

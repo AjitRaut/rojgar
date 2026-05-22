@@ -4,7 +4,7 @@ from sqlalchemy import func, case
 from sqlalchemy.orm import Session
 
 from app.models.complaint import Complaint, ComplaintStatus
-from app.models.company import CompanyProfile, SubscriptionTier
+from app.models.company import CompanyProfile
 from app.models.job import Job, JobApplication, JobStatus, ApplicationStatus
 from app.models.review import Review
 from app.models.user import User, UserRole
@@ -22,105 +22,281 @@ class ReportService:
             query = query.filter(func.date(model.created_at) <= end_date)
         return query
 
-    # Report 1: User Registration Summary by Role
+    # Report 1: User Registration Report (row-level)
     def user_registration_report(
         self, start_date: Optional[date] = None, end_date: Optional[date] = None
     ) -> list[dict]:
         query = self.db.query(
-            User.role.label("role"),
-            func.count(User.id).label("total"),
-            func.sum(case((User.is_verified == True, 1), else_=0)).label("verified"),
-            func.sum(case((User.is_active == True, 1), else_=0)).label("active"),
-            func.sum(case((User.is_active == False, 1), else_=0)).label("inactive"),
-        ).group_by(User.role)
+            User.id,
+            User.full_name,
+            User.email,
+            User.phone,
+            User.role,
+            User.is_verified,
+            User.is_active,
+            User.created_at,
+        ).order_by(User.created_at.desc())
         query = self._date_filter(query, User, start_date, end_date)
         rows = query.all()
         return [
             {
+                "id": r.id,
+                "full_name": r.full_name,
+                "email": r.email,
+                "phone": r.phone or "N/A",
                 "role": r.role,
-                "total": r.total,
-                "verified": r.verified or 0,
-                "active": r.active or 0,
-                "inactive": r.inactive or 0,
+                "is_verified": "Yes" if r.is_verified else "No",
+                "is_active": "Yes" if r.is_active else "No",
+                "registered_on": r.created_at.strftime("%d %b %Y") if r.created_at else "N/A",
             }
             for r in rows
         ]
 
-    # Report 2: Job Status Summary
-    def job_status_report(
+    # Report 2: Job Listings Report (row-level)
+    def job_listings_report(
         self, start_date: Optional[date] = None, end_date: Optional[date] = None
     ) -> list[dict]:
-        query = self.db.query(
-            Job.status.label("status"),
-            func.count(Job.id).label("count"),
-            func.coalesce(func.avg(Job.daily_wage), 0.0).label("avg_daily_wage"),
-            func.coalesce(func.sum(Job.total_budget), 0.0).label("total_budget"),
-        ).group_by(Job.status)
-        query = self._date_filter(query, Job, start_date, end_date)
-        rows = query.all()
-        return [
-            {
-                "status": r.status,
-                "count": r.count,
-                "avg_daily_wage": round(float(r.avg_daily_wage), 2),
-                "total_budget": round(float(r.total_budget), 2),
-            }
-            for r in rows
-        ]
-
-    # Report 3: Jobs by Category
-    def job_category_report(
-        self, start_date: Optional[date] = None, end_date: Optional[date] = None
-    ) -> list[dict]:
-        query = self.db.query(
-            Job.category.label("category"),
-            func.count(Job.id).label("total_jobs"),
-            func.sum(case((Job.status == JobStatus.OPEN, 1), else_=0)).label("open_jobs"),
-            func.sum(case((Job.status == JobStatus.COMPLETED, 1), else_=0)).label("completed_jobs"),
-            func.coalesce(func.avg(Job.daily_wage), 0.0).label("avg_wage"),
-        ).group_by(Job.category).order_by(func.count(Job.id).desc())
-        query = self._date_filter(query, Job, start_date, end_date)
-        rows = query.all()
-        return [
-            {
-                "category": r.category,
-                "total_jobs": r.total_jobs,
-                "open_jobs": r.open_jobs or 0,
-                "completed_jobs": r.completed_jobs or 0,
-                "avg_wage": round(float(r.avg_wage), 2),
-            }
-            for r in rows
-        ]
-
-    # Report 4: Worker Skills Distribution
-    def worker_skills_report(self) -> list[dict]:
-        rows = (
+        query = (
             self.db.query(
-                WorkerProfile.primary_skill.label("primary_skill"),
-                func.count(WorkerProfile.id).label("worker_count"),
-                func.coalesce(func.avg(WorkerProfile.rating_avg), 0.0).label("avg_rating"),
-                func.coalesce(func.avg(WorkerProfile.daily_rate), 0.0).label("avg_daily_rate"),
-                func.sum(
-                    case((WorkerProfile.is_aadhaar_verified == True, 1), else_=0)
-                ).label("verified_count"),
+                Job.id,
+                Job.title,
+                Job.category,
+                Job.city,
+                Job.state,
+                Job.daily_wage,
+                Job.workers_needed,
+                Job.duration_days,
+                Job.status,
+                Job.is_urgent,
+                Job.created_at,
+                User.full_name.label("posted_by"),
             )
-            .filter(WorkerProfile.primary_skill.isnot(None))
-            .group_by(WorkerProfile.primary_skill)
-            .order_by(func.count(WorkerProfile.id).desc())
-            .all()
+            .join(User, User.id == Job.posted_by_id)
+            .order_by(Job.created_at.desc())
         )
+        query = self._date_filter(query, Job, start_date, end_date)
+        rows = query.all()
         return [
             {
-                "primary_skill": r.primary_skill,
-                "worker_count": r.worker_count,
-                "avg_rating": round(float(r.avg_rating), 2),
-                "avg_daily_rate": round(float(r.avg_daily_rate), 2),
-                "verified_count": r.verified_count or 0,
+                "id": r.id,
+                "title": r.title,
+                "posted_by": r.posted_by,
+                "category": r.category,
+                "city": r.city,
+                "state": r.state or "N/A",
+                "daily_wage": round(float(r.daily_wage), 2),
+                "workers_needed": r.workers_needed,
+                "duration_days": r.duration_days,
+                "status": r.status.replace("_", " ").capitalize() if isinstance(r.status, str) else str(r.status).replace("_", " ").capitalize(),
+                "is_urgent": "Yes" if r.is_urgent else "No",
+                "posted_on": r.created_at.strftime("%d %b %Y") if r.created_at else "N/A",
             }
             for r in rows
         ]
 
-    # Report 5: City-wise Activity
+    # Report 3: Job Applications Report (row-level)
+    def job_applications_report(
+        self, start_date: Optional[date] = None, end_date: Optional[date] = None
+    ) -> list[dict]:
+        worker_alias = User.__table__.alias("worker_user")
+        query = (
+            self.db.query(
+                JobApplication.id,
+                User.full_name.label("worker_name"),
+                User.email.label("worker_email"),
+                Job.title.label("job_title"),
+                Job.city.label("job_city"),
+                JobApplication.status,
+                JobApplication.proposed_rate,
+                JobApplication.created_at,
+            )
+            .join(Job, Job.id == JobApplication.job_id)
+            .join(User, User.id == JobApplication.worker_id)
+            .order_by(JobApplication.created_at.desc())
+        )
+        query = self._date_filter(query, JobApplication, start_date, end_date)
+        rows = query.all()
+        return [
+            {
+                "id": r.id,
+                "worker_name": r.worker_name,
+                "worker_email": r.worker_email,
+                "job_title": r.job_title,
+                "job_city": r.job_city,
+                "status": str(r.status).replace("_", " ").capitalize(),
+                "proposed_rate": f"₹{round(float(r.proposed_rate), 2):,.2f}" if r.proposed_rate else "N/A",
+                "applied_on": r.created_at.strftime("%d %b %Y") if r.created_at else "N/A",
+            }
+            for r in rows
+        ]
+
+    # Report 4: Worker Profiles Report (row-level)
+    def worker_profiles_report(
+        self, start_date: Optional[date] = None, end_date: Optional[date] = None
+    ) -> list[dict]:
+        query = (
+            self.db.query(
+                User.full_name,
+                User.email,
+                WorkerProfile.primary_skill,
+                WorkerProfile.city,
+                WorkerProfile.state,
+                WorkerProfile.daily_rate,
+                WorkerProfile.experience_years,
+                WorkerProfile.rating_avg,
+                WorkerProfile.total_jobs_completed,
+                WorkerProfile.is_available,
+                WorkerProfile.is_aadhaar_verified,
+                User.created_at,
+            )
+            .join(User, User.id == WorkerProfile.user_id)
+            .filter(User.is_active == True)
+            .order_by(WorkerProfile.rating_avg.desc())
+        )
+        query = self._date_filter(query, User, start_date, end_date)
+        rows = query.all()
+        return [
+            {
+                "full_name": r.full_name,
+                "email": r.email,
+                "primary_skill": r.primary_skill or "N/A",
+                "city": r.city or "N/A",
+                "state": r.state or "N/A",
+                "daily_rate": f"₹{round(float(r.daily_rate), 0):,.0f}" if r.daily_rate else "N/A",
+                "experience_years": r.experience_years,
+                "rating_avg": round(float(r.rating_avg), 1),
+                "total_jobs_completed": r.total_jobs_completed,
+                "is_available": "Yes" if r.is_available else "No",
+                "aadhaar_verified": "Yes" if r.is_aadhaar_verified else "No",
+                "joined_on": r.created_at.strftime("%d %b %Y") if r.created_at else "N/A",
+            }
+            for r in rows
+        ]
+
+    # Report 5: Company Profiles Report (row-level)
+    def company_profiles_report(
+        self, start_date: Optional[date] = None, end_date: Optional[date] = None
+    ) -> list[dict]:
+        job_count_sub = (
+            self.db.query(
+                Job.posted_by_id,
+                func.count(Job.id).label("total_jobs"),
+            )
+            .group_by(Job.posted_by_id)
+            .subquery()
+        )
+        query = (
+            self.db.query(
+                CompanyProfile.company_name,
+                CompanyProfile.company_type,
+                CompanyProfile.city,
+                CompanyProfile.state,
+                CompanyProfile.subscription_tier,
+                CompanyProfile.is_gst_verified,
+                User.email,
+                User.created_at,
+                func.coalesce(job_count_sub.c.total_jobs, 0).label("total_jobs"),
+            )
+            .join(User, User.id == CompanyProfile.user_id)
+            .outerjoin(job_count_sub, job_count_sub.c.posted_by_id == User.id)
+            .order_by(func.coalesce(job_count_sub.c.total_jobs, 0).desc())
+        )
+        query = self._date_filter(query, User, start_date, end_date)
+        rows = query.all()
+        return [
+            {
+                "company_name": r.company_name,
+                "company_type": r.company_type or "N/A",
+                "email": r.email,
+                "city": r.city or "N/A",
+                "state": r.state or "N/A",
+                "subscription_tier": str(r.subscription_tier).capitalize(),
+                "gst_verified": "Yes" if r.is_gst_verified else "No",
+                "total_jobs_posted": r.total_jobs,
+                "registered_on": r.created_at.strftime("%d %b %Y") if r.created_at else "N/A",
+            }
+            for r in rows
+        ]
+
+    # Report 6: Complaint Report (row-level)
+    def complaint_report(
+        self, start_date: Optional[date] = None, end_date: Optional[date] = None
+    ) -> list[dict]:
+        raised_by = User.__table__.alias("raised_by")
+        against = User.__table__.alias("against_user")
+
+        query = (
+            self.db.query(
+                Complaint.id,
+                Complaint.subject,
+                Complaint.status,
+                Complaint.created_at,
+                raised_by.c.full_name.label("raised_by_name"),
+                raised_by.c.email.label("raised_by_email"),
+                against.c.full_name.label("against_name"),
+                Job.title.label("job_title"),
+            )
+            .join(raised_by, raised_by.c.id == Complaint.raised_by_id)
+            .outerjoin(against, against.c.id == Complaint.against_id)
+            .outerjoin(Job, Job.id == Complaint.job_id)
+            .order_by(Complaint.created_at.desc())
+        )
+        query = self._date_filter(query, Complaint, start_date, end_date)
+        rows = query.all()
+        return [
+            {
+                "id": r.id,
+                "subject": r.subject,
+                "raised_by": r.raised_by_name,
+                "raised_by_email": r.raised_by_email,
+                "against": r.against_name or "N/A",
+                "related_job": r.job_title or "N/A",
+                "status": str(r.status).replace("_", " ").capitalize(),
+                "filed_on": r.created_at.strftime("%d %b %Y") if r.created_at else "N/A",
+            }
+            for r in rows
+        ]
+
+    # Report 7: Reviews & Ratings Report (row-level)
+    def reviews_report(
+        self, start_date: Optional[date] = None, end_date: Optional[date] = None
+    ) -> list[dict]:
+        reviewer = User.__table__.alias("reviewer")
+        reviewee = User.__table__.alias("reviewee")
+
+        query = (
+            self.db.query(
+                Review.id,
+                Review.rating,
+                Review.comment,
+                Review.review_type,
+                Review.created_at,
+                reviewer.c.full_name.label("reviewer_name"),
+                reviewee.c.full_name.label("reviewee_name"),
+                Job.title.label("job_title"),
+            )
+            .join(reviewer, reviewer.c.id == Review.reviewer_id)
+            .join(reviewee, reviewee.c.id == Review.reviewee_id)
+            .join(Job, Job.id == Review.job_id)
+            .order_by(Review.created_at.desc())
+        )
+        query = self._date_filter(query, Review, start_date, end_date)
+        rows = query.all()
+        return [
+            {
+                "id": r.id,
+                "reviewer": r.reviewer_name,
+                "reviewee": r.reviewee_name,
+                "job_title": r.job_title,
+                "rating": r.rating,
+                "comment": r.comment or "No comment",
+                "review_type": str(r.review_type).replace("_", " ").capitalize(),
+                "reviewed_on": r.created_at.strftime("%d %b %Y") if r.created_at else "N/A",
+            }
+            for r in rows
+        ]
+
+    # Report 8: City-wise Activity Summary (summary table — fine as aggregate)
     def city_activity_report(self) -> list[dict]:
         job_city = (
             self.db.query(Job.city.label("city"), func.count(Job.id).label("jobs"))
@@ -176,72 +352,6 @@ class ReportService:
                 "total_jobs": r.total_jobs,
                 "total_workers": r.total_workers,
                 "total_companies": r.total_companies,
-            }
-            for r in rows
-        ]
-
-    # Report 6: Application Status Distribution
-    def application_stats_report(
-        self, start_date: Optional[date] = None, end_date: Optional[date] = None
-    ) -> list[dict]:
-        query = self.db.query(
-            JobApplication.status.label("status"),
-            func.count(JobApplication.id).label("count"),
-        ).group_by(JobApplication.status)
-        query = self._date_filter(query, JobApplication, start_date, end_date)
-        rows = query.all()
-        total = sum(r.count for r in rows) or 1
-        return [
-            {
-                "status": r.status,
-                "count": r.count,
-                "percentage": round(r.count / total * 100, 2),
-            }
-            for r in rows
-        ]
-
-    # Report 7: Complaint Summary
-    def complaint_report(
-        self, start_date: Optional[date] = None, end_date: Optional[date] = None
-    ) -> list[dict]:
-        query = self.db.query(
-            Complaint.status.label("status"),
-            func.count(Complaint.id).label("count"),
-        ).group_by(Complaint.status)
-        query = self._date_filter(query, Complaint, start_date, end_date)
-        rows = query.all()
-        return [{"status": r.status, "count": r.count} for r in rows]
-
-    # Report 8: Top Workers by Rating & Jobs Completed
-    def top_workers_report(self, limit: int = 20) -> list[dict]:
-        rows = (
-            self.db.query(
-                WorkerProfile.id.label("worker_id"),
-                User.full_name.label("full_name"),
-                WorkerProfile.primary_skill.label("primary_skill"),
-                WorkerProfile.city.label("city"),
-                WorkerProfile.rating_avg.label("rating_avg"),
-                WorkerProfile.total_jobs_completed.label("total_jobs_completed"),
-                WorkerProfile.daily_rate.label("daily_rate"),
-            )
-            .join(User, User.id == WorkerProfile.user_id)
-            .filter(User.is_active == True)
-            .order_by(
-                WorkerProfile.rating_avg.desc(),
-                WorkerProfile.total_jobs_completed.desc(),
-            )
-            .limit(limit)
-            .all()
-        )
-        return [
-            {
-                "worker_id": r.worker_id,
-                "full_name": r.full_name,
-                "primary_skill": r.primary_skill or "N/A",
-                "city": r.city or "N/A",
-                "rating_avg": round(float(r.rating_avg), 2),
-                "total_jobs_completed": r.total_jobs_completed,
-                "daily_rate": round(float(r.daily_rate), 2) if r.daily_rate else None,
             }
             for r in rows
         ]
